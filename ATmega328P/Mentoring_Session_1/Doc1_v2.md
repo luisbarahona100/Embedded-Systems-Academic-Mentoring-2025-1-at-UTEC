@@ -81,9 +81,6 @@ Debe completar los campos en el menú `Tools` -> `External Tools` de la siguient
 > Si el ATmega328P es nuevo, es estrictamente necesario programar los **fuses** (fusibles) del microcontrolador. Para realizar esta tarea, se debe descargar y utilizar el software **AVRDUDESS** o **Khazama**.
 
 
-> [!CAUTION]
-> **OJO:** Si el ATmega328P es nuevo, es necesario programar los fusibles usando **AVRDUDESS** o **KHAZAMA** antes de subir código desde el IDE.
-
 ### 1.4. Instalar AVRDUDESS
 Utilizado principalmente para programar fusibles en chips nuevos.
 
