@@ -60,6 +60,26 @@ Herramienta para manipular la memoria ROM o EEPROM de microcontroladores AVR usa
    * Abrir Microchip Studio -> `Tools` -> `External Tools`.
    * Agregar nueva herramienta llamada `USBASP_prog`.
    * Una vez configurado, aparecerá en el menú **Tools**.
+  
+### Configuración del Programador USBasp en Microchip Studio (Autoría: Christopher Eduardo Briceño Carbajal)
+
+Para integrar el programador **USBasp** como una herramienta externa, utilice la siguiente estructura de comando base:
+
+`avrdude -p [uC] -c [interfazProgramacion] -P [PuertoCOM] -b [BaudRate] -U [memoria]:[operacion]:"[file.hex]":i`
+
+#### Parámetros de Configuración (External Tools)
+Debe completar los campos en el menú `Tools` -> `External Tools` de la siguiente manera:
+
+| Campo | Valor Sugerido |
+| :--- | :--- |
+| **Command** | `D:\AVR_DUDE\avrdude.exe` |
+| **Arguments** | `-c USBasp -p atmega328p -P usb -B 8.0 -U flash:w:"$(OutDir)Debug\$(TargetName).hex":i` |
+| **Initial directory** | `$(ProjectDir)` |
+
+> [!IMPORTANT]
+> **Nota sobre Microcontroladores Nuevos:**
+> Si el ATmega328P es nuevo, es estrictamente necesario programar los **fuses** (fusibles) del microcontrolador. Para realizar esta tarea, se debe descargar y utilizar el software **AVRDUDESS** o **Khazama**.
+
 
 > [!CAUTION]
 > **OJO:** Si el ATmega328P es nuevo, es necesario programar los fusibles usando **AVRDUDESS** o **KHAZAMA** antes de subir código desde el IDE.
