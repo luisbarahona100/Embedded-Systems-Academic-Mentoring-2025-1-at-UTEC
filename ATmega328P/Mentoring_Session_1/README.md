@@ -127,7 +127,7 @@ A continuación, se detalla la conexión para programación ISP en protoboard.
 | GND  | 8  | GND |
 <img width="449" height="204" alt="image" src="https://github.com/user-attachments/assets/30451054-10f7-40e0-b423-eb3d78662044" />
 
-<img width="286" height="176" alt="image" src="https://github.com/user-attachments/assets/a404ac57-386d-412b-afc7-c229778acc84" />
+<img width="517" height="324" alt="image" src="https://github.com/user-attachments/assets/1e9168c8-2eb0-48d8-b286-7fba2f29022a" />
 
 ---
 
