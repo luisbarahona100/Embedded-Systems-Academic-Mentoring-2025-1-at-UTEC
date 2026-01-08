@@ -66,3 +66,25 @@ The course focuses on **fundamental and applied concepts of embedded systems**, 
 
 ## 📁 Repository Structure
 
+
+*(Structure may evolve as new mentoring materials are added.)*
+
+---
+
+## 👨‍🏫 Academic Context
+
+This repository was developed as part of an **academic mentoring initiative**, aimed at supporting undergraduate students in strengthening their **practical and theoretical foundations in embedded systems**, with a strong focus on **hardware-level understanding and real-world system integration**.
+
+---
+
+## 📜 License
+
+This repository is intended for **educational and academic use**.
+
+---
+
+## 📬 Contact
+
+For academic or technical inquiries related to this mentoring material, please feel free to reach out through GitHub.
+
+
