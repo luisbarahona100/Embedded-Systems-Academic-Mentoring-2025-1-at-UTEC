@@ -28,6 +28,7 @@
 * **Paso 4:** Ejecutar Zadig, seleccionar el dispositivo y hacer clic en **Install Driver**.
 
 > **Nota:** Asegúrese de seleccionar el driver `libusb-win32` o el recomendado por la documentación de USBasp en Zadig.
+<img width="710" height="317" alt="image" src="https://github.com/user-attachments/assets/24b9486e-0c80-41c2-97c2-a2fb5a736b94" />
 
 ### 1.2. Instalar AVRDUDE
 Herramienta de consola para manipular la memoria ROM/EEPROM vía ISP.
