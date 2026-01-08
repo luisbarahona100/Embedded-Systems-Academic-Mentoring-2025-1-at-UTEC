@@ -90,12 +90,12 @@ Utilizado principalmente para programar fusibles en chips nuevos.
 3. **PASO 3:** Entrar en **Releases** y buscar la versión **v2.17**.
 4. **PASO 4:** Instalar en la ruta: `C:\Program Files (x86)\AVRDUDESS`.
 5. **PASO 5:** Conectar USBasp al ATmega328P mediante adaptador JTAG/USB. (Ver Anexo 1).
-6. **PASO 6: Configuración Inicial:**
+7. **PASO 6: Configuración Inicial:**
    * Elegir **ATmega328P**.
    * Configurar fusibles en **Bit Selector**.
    * **Configuración de reloj (1MHz):** Asegurar que `CLKDIV8` esté programado (valor 0).
    * **Regla de oro:** Fusible programado = 0 | Fusible NO programado = 1.
-7. **PASO 7:** Programar fusibles.
+8. **PASO 7:** Programar fusibles.
 
 ### 1.5. Instalar Proteus para las simulaciones
 1. **PASO 1:** Referencia de instalación: [Video Tutorial](https://www.youtube.com/watch?v=22dPDU_sQjw).
@@ -125,6 +125,9 @@ A continuación, se detalla la conexión para programación ISP en protoboard.
 | RESET| 1  | PC6 |
 | VCC  | 7  | VCC |
 | GND  | 8  | GND |
+<img width="449" height="204" alt="image" src="https://github.com/user-attachments/assets/30451054-10f7-40e0-b423-eb3d78662044" />
+
+<img width="286" height="176" alt="image" src="https://github.com/user-attachments/assets/a404ac57-386d-412b-afc7-c229778acc84" />
 
 ---
 
