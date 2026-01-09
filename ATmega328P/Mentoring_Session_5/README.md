@@ -259,7 +259,7 @@ RET
 
 ### 3.5. Código AVR Ensamblador
 
-[AVR_Display7SegmentosAC_PNP/main.asm](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%205/AVR_Display7SegmentosAC_PNP/AVR_Display7SegmentosAC_PNP/main.asm)
+[AVR_Display7SegmentosAC_PNP/main.asm](https://github.com/luisbarahona100/Embedded-Systems-Academic-Mentoring-2025-1-at-UTEC/blob/main/ATmega328P/Mentoring_Session_5/main_AVR_Display7Segmentos_AC_PNP.asm)
 
 ### 3.6. Simulación
 
@@ -337,7 +337,7 @@ Es el mismo diagrama que usa el CASO 2 (sección 3.3). Lo único que cambia es l
 
 ### 4.5. Código en AVR Ensamblador
 
-[AVR_Display7SegmentosCC_NPN/main.asm](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%205/AVR_Display7SegmentosCC_NPN/AVR_Display7SegmentosCC_NPN/main.asm)
+[AVR_Display7SegmentosCC_NPN/main.asm](https://github.com/luisbarahona100/Embedded-Systems-Academic-Mentoring-2025-1-at-UTEC/blob/main/ATmega328P/Mentoring_Session_5/main_AVR_Display7Segmentos_CC_NPN.asm)
 
 ### 4.6. Simulación
 
@@ -367,17 +367,6 @@ Es el mismo diagrama que usa el CASO 2 (sección 3.3). Lo único que cambia es l
 | Ánodo Común | PNP | ✅ | Configuración correcta |
 | Cátodo Común | NPN | ✅ | Configuración correcta |
 | Cátodo Común | PNP | ❌ | Emisor debe ir a VCC |
-
----
-
-## Recursos Adicionales
-
-- [Repositorio completo de la Mentoría 5](https://github.com/luisbarahona100/Mentorias/tree/main/Mentor%C3%ADa%205)
-- Video explicativo - Display Ánodo Común
-- Video explicativo - Display Cátodo Común
-- Documentación de transistores BJT
-- Microchip Studio
-- Proteus Design Suite
 
 ---
 
