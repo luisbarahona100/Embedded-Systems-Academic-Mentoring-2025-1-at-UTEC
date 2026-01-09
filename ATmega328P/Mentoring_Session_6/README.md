@@ -3,7 +3,7 @@
 **Autor:** Luis David Barahona Valdivieso  
 **Fecha:** 27.06.2025
 
-> **Documento Completo + Imágenes:** https://docs.google.com/document/d/12DclIE2LXMmhjDwaQSpYQt8y0N6123_-Z8UKY278eEQ/edit?tab=t.0#heading=h.y11qxu3oi3lj
+> **Documento Completo + Imágenes:** https://docs.google.com/document/d/12DclIE2LXMmhjDwaQSpYQt8y0N6123_-Z8UKY278eEQ/edit?usp=drive_link
 
 Esta guía presenta ejemplos prácticos de generación de señales PWM utilizando el Timer/Counter 0 del ATmega328P en diferentes modos de operación.
 
