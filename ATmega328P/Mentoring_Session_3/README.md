@@ -87,9 +87,6 @@ Volver a verificar n
 
 *(Incluir imágenes o descripción de la implementación física si está disponible)*
 
-### 1.6. Documentación en GITHUB
-
-[Repositorio completo - ASR_Arithmetic_Shift_Right](https://github.com/luisbarahona100/Mentorias/tree/main/Mentor%C3%ADa%204/ASR_Arithmetic_Shift_Right)
 
 ---
 
