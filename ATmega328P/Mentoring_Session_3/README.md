@@ -59,13 +59,13 @@ Volver a verificar n
 ### 1.3. Código en Ensamblador y C
 
 **Código en Ensamblador:**  
-[ASR_Code_Assembler](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/ASR_Arithmetic_Shift_Right/ASR_Code_Assembler/AssemblerApplication1/main.asm)
+[ASR_Code_Assembler](https://github.com/luisbarahona100/Embedded-Systems-Academic-Mentoring-2025-1-at-UTEC/blob/main/ATmega328P/Mentoring_Session_3/main.asm)
 
 **Código en C con macro:**  
-[ASR_Code_C_Macro](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/ASR_Arithmetic_Shift_Right/ASR_Code_C_Macro/ASR_Code_C_Macro/main.c)
+[ASR_Code_C_Macro](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/ASR_Arithmetic_Shift_Right/ASR_Code_C_Macro/ASR_Code_C_Macro/main.c](https://github.com/luisbarahona100/Embedded-Systems-Academic-Mentoring-2025-1-at-UTEC/blob/main/ATmega328P/Mentoring_Session_3/main_ASR_Code_C_Macro.c )
 
 **Código en C con rutina:**  
-[ASR_Code_C_Rutina](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/ASR_Arithmetic_Shift_Right/ASR_Code_C_Rutina/ASR_C_Code/main.c)
+[ASR_Code_C_Rutina](https://github.com/luisbarahona100/Embedded-Systems-Academic-Mentoring-2025-1-at-UTEC/blob/main/ATmega328P/Mentoring_Session_3/main_ASR_Rutine_C_Code.c)
 
 ### 1.4. Simulación de los casos en Microchip y Proteus
 
