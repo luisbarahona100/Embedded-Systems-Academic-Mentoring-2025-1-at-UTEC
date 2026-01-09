@@ -128,7 +128,7 @@ Volver al loop principal
 [RetardoAVREnsamblador/main.asm](https://github.com/luisbarahona100/Embedded-Systems-Academic-Mentoring-2025-1-at-UTEC/blob/main/ATmega328P/Mentoring_Session_3/main_Retardo_AVR_Ensamblador.asm)
 
 **Script Python para calcular el valor de los Registros:**  
-[delay2AVR.py](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/Retardos/delay2AVR.py)
+[delay2AVR.py](https://github.com/luisbarahona100/Embedded-Systems-Academic-Mentoring-2025-1-at-UTEC/blob/main/ATmega328P/Mentoring_Session_3/delay2AVR.py)
 
 
 ### 2.5. Código Retardo en C
