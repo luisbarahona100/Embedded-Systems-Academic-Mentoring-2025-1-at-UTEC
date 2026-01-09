@@ -58,9 +58,8 @@ The course focuses on **fundamental and applied concepts of embedded systems**, 
 - 📖 [Arduino Uno Hardware Reference](https://docs.arduino.cc/hardware/uno-rev3/) (usa ATmega328P)
 
 #### **PSoC 5LP** (ARM Cortex-M3–based SoC)
-- 📄 [PSoC 5LP Datasheet (Infineon)](https://www.infineon.com/dgdl/Infineon-CY8C58LP_Family_Datasheet_Programmable_System-on-Chip_(PSoC)-DataSheet-v16_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee7d03a70b1)
-- 📚 [PSoC 5LP Product Family Page](https://www.infineon.com/cms/en/product/microcontroller/32-bit-psoc-arm-cortex-microcontroller/psoc-5-lp/)
-- 📖 [PSoC 5LP Architecture TRM](https://www.infineon.com/dgdl/Infineon-PSoC_5LP_Architecture_TRM-AdditionalTechnicalInformation-v11_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0f946dbf01a0)
+- 📄 [PSoC 5LP Datasheet (Infineon)](https://www.infineon.com/assets/row/public/documents/30/44/infineon-cy8ckit-059-psoc-5lp-prototyping-kit-guide-usermanual-en.pdf?fileId=8ac78c8c7d0d8da4017d0ef981770f63)
+- 📚 [PSoC 5LP Product Family Page](https://www.infineon.com/products/microcontroller/32-bit-psoc-arm-cortex/psoc-5-lp-m3)
 - 🎓 [CY8CKIT-059 Development Kit](https://www.infineon.com/cms/en/product/evaluation-boards/cy8ckit-059/)
 
 ### Software
