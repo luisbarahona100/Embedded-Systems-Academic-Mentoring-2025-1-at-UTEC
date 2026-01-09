@@ -1,7 +1,14 @@
-```markdown
-# Mentoría: ADCs en PSoC 5LP, Visualización en LCD 16x2 y Envío de datos por UART
+# Manejo de ADCs en ATmega328P, Visualización en LCD 16x2 y Envío de datos por UART a la PC
 
-## Índice
+**Autor:** Luis David Barahona Valdivieso  
+**Fecha:** 12/05/2025  
+
+
+**Documento Completo + Imágenes**: https://docs.google.com/document/d/1LzXg1sUQNCU8D6XGBXzJfF3SSRLWpLjDkIT3btkS6Yo/edit?usp=sharing
+
+---
+
+## Tabla de Contenidos
 
 1. [Introducción a los ADCs en PSoC 5LP](#1-introducción-a-los-adcs-en-psoc-5lp)
    - 1.1. [ADC SAR (Successive Approximation Register)](#11-adc-sar-successive-approximation-register)
