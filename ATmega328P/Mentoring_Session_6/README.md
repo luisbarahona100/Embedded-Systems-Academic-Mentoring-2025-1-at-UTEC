@@ -1,749 +1,683 @@
-# Manejo de ADCs en ATmega328P, Visualización en LCD 16x2 y Envío de datos por UART a la PC
+# MANEJO DEl ADC SAR del ATmega328P
 
 **Autor:** Luis David Barahona Valdivieso  
-**Fecha:** 12/05/2025  
+**Fecha:** 10.06.2025
 
-
-**Documento Completo + Imágenes**: https://docs.google.com/document/d/1LzXg1sUQNCU8D6XGBXzJfF3SSRLWpLjDkIT3btkS6Yo/edit?usp=sharing
-
----
-
-## Tabla de Contenidos
-
-1. [Introducción a los ADCs en PSoC 5LP](#1-introducción-a-los-adcs-en-psoc-5lp)
-   - 1.1. [ADC SAR (Successive Approximation Register)](#11-adc-sar-successive-approximation-register)
-   - 1.2. [ADC Delta-Sigma](#12-adc-delta-sigma)
-   - 1.3. [Comparación y selección del ADC adecuado](#13-comparación-y-selección-del-adc-adecuado)
-
-2. [Configuración del proyecto en PSoC Creator](#2-configuración-del-proyecto-en-psoc-creator)
-   - 2.1. [Creación del proyecto](#21-creación-del-proyecto)
-   - 2.2. [Configuración del TopDesign](#22-configuración-del-topdesign)
-   - 2.3. [Configuración de componentes](#23-configuración-de-componentes)
-
-3. [Implementación de los retos](#3-implementación-de-los-retos)
-   - 3.1. [Reto 1: Discretización con precisión de ±1mV](#31-reto-1-discretización-con-precisión-de-±1mv)
-   - 3.2. [Reto 2: Visualización en LCD 16x2](#32-reto-2-visualización-en-lcd-16x2)
-   - 3.3. [Reto 3: Visualización mediante PuTTY (Windows)](#33-reto-3-visualización-mediante-putty-windows)
-   - 3.4. [Reto 4: Visualización mediante Minicom (Linux)](#34-reto-4-visualización-mediante-minicom-linux)
-
-4. [Código completo](#4-código-completo)
-
-5. [Simulación y evidencias](#5-simulación-y-evidencias)
-
-6. [Referencias](#6-referencias)
+**Documento Completo + Imágenes:** https://docs.google.com/document/d/10z6ESZenzZYtXlVCkWsLMAYJYBVS4xL6o0t_hr-dr90/edit?tab=t.0
 
 ---
 
-## 1. Introducción a los ADCs en PSoC 5LP
+## Índice
 
-PSoC 5LP ofrece dos tipos principales de conversores analógico-digitales:
-
-### 1.1. ADC SAR (Successive Approximation Register)
-
-**Características principales:**
-- Resolución: 8 a 12 bits
-- Velocidad de conversión: Rápida (hasta 1 MSPS)
-- Consumo de potencia: Moderado
-- Precisión: Buena para aplicaciones de propósito general
-- Ideal para: Aplicaciones que requieren alta velocidad de muestreo
-
-**Documentación oficial:**
-[ADC SAR - Infineon](https://www.infineon.com/cms/en/design-support/tools/sdk/psoc-software/psoc-3-5-components/adc-successive-approximation-register-adc_sar/)
-
-### 1.2. ADC Delta-Sigma
-
-**Características principales:**
-- Resolución: 8 a 20 bits
-- Velocidad de conversión: Más lenta (hasta 187 kSPS a 12 bits)
-- Consumo de potencia: Bajo
-- Precisión: Muy alta, con filtrado digital integrado
-- Ideal para: Aplicaciones que requieren alta precisión y rechazo de ruido
-
-**Documentación oficial:**
-[ADC Delta-Sigma - Infineon](https://www.infineon.com/cms/en/design-support/tools/sdk/psoc-software/psoc-3-5-components/delta-sigma-analog-to-digital-converter-adc_delsig/)
-
-### 1.3. Comparación y selección del ADC adecuado
-
-Para cumplir con el **Reto 1** (precisión de ±1mV en un rango de 0-5V):
-
-**Cálculo de resolución requerida:**
-```
-Resolución requerida = Rango total / Precisión deseada
-Resolución requerida = 5V / 0.001V = 5000 niveles
-```
-
-**Bits necesarios:**
-```
-2^n ≥ 5000
-n ≥ log₂(5000) ≈ 12.29 bits
-```
-
-**Conclusión:** Necesitamos al menos **13 bits de resolución efectiva**.
-
-**Selección:** Utilizaremos el **ADC Delta-Sigma** configurado a **16 bits** para garantizar la precisión requerida con margen de seguridad.
+1. [Configuración de un ADC SAR en ATmega328P con el Timer/Counter0 (Ts=100ms)](#1-configuración-de-un-adc-sar-en-atmega328p-con-el-timercounter0-ts100ms)
+   - 1.1. [Descripción general del SAR ADC del ATmega328P](#11-descripción-general-del-sar-adc-del-atmega328p)
+   - 1.2. [Código C Ejemplo](#12-código-c-ejemplo)
+   - 1.3. [Configuración de registros elegida](#13-configuración-de-registros-elegida)
+   - 1.4. [Simulación / Evidencias](#14-simulación--evidencias)
+2. [Modulación manual de DutyCycle mediante un potenciómetro (ADC10Bit SAR + PWM) - ATmega328p](#2-modulación-manual-de-dutycycle-mediante-un-potenciómetro-adc10bit-sar--pwm---atmega328p)
+   - 2.1. [Código](#21-código)
+   - 2.2. [Resumen de configuración de registros y justificación de cálculos](#22-resumen-de-configuración-de-registros-y-justificación-de-cálculos)
+   - 2.3. [Simulación y evidencias](#23-simulación-y-evidencias)
+3. [ADCs en PSoC 5LP, Visualización en una pantalla LCD 16x2, Envío de datos por UART a la PC](#3-adcs-en-psoc-5lp-visualización-en-una-pantalla-lcd-16x2-envío-de-datos-por-uart-a-la-pc)
 
 ---
 
-## 2. Configuración del proyecto en PSoC Creator
+## 1. Configuración de un ADC SAR en ATmega328P con el Timer/Counter0 (Ts=100ms)
 
-### 2.1. Creación del proyecto
+### 1.1. Descripción general del SAR ADC del ATmega328P
 
-1. Abrir **PSoC Creator**
-2. File → New → Project
-3. Seleccionar: **PSoC 5LP Design**
-4. Nombre del proyecto: `ADC_LCD_UART_PSoC5LP`
-5. Click en **Create Project**
+El ATmega328P cuenta con un **ADC SAR (Successive Approximation Register)** de **10 bits** con las siguientes características:
 
-### 2.2. Configuración del TopDesign
+#### Características principales:
+- **Resolución:** 10 bits → Puede digitalizar y diferenciar **2^10 = 1024** valores analógicos
+- **Rango de periodo de muestreo:** 65 - 260 μs (puede modificarse usando timer/counters)
+- **Frecuencia de muestreo máxima:** 15K SPS (15,000 muestras por segundo) o 15 kHz
+- **Canales de entrada:**
+  - 6 canales multiplexados de un solo extremo con referencia a GND
+  - 2 canales adicionales multiplexados de un solo extremo
+- **Rango de voltaje de entrada:** 0 a Vcc (5V)
+- **Voltaje de referencia:** Seleccionable de 1.1V o Vcc
+- **Modos de operación:**
+  - Free running mode
+  - Single conversion mode
+- **Características adicionales:**
+  - Interrupción en conversión ADC completada
+  - Cancelador de ruido en modo de suspensión
 
-Componentes necesarios en el esquemático:
-
-1. **ADC_DelSig_1** (ADC Delta-Sigma)
-   - Resolution: 16 bits
-   - Input Range: 0 to VDDA (Single Ended)
-   - Sample Rate: 1000 SPS (muestras por segundo)
-   - Reference: Internal Vref (1.024V) with bypass
-
-2. **Character_LCD_1** (LCD 16x2)
-   - Driver: Generic (custom character support)
-
-3. **UART_1** (UART para comunicación serial)
-   - Baud Rate: 115200
-   - Data Bits: 8
-   - Parity: None
-   - Stop Bits: 1
-
-4. **Clock_1** (reloj para el ADC)
-   - Frequency: 1 MHz
-
-5. **Pin_Pot** (entrada analógica del potenciómetro)
-   - Type: Analog
-   - Drive Mode: High Impedance Analog
-
-### 2.3. Configuración de componentes
-
-#### Configuración del ADC Delta-Sigma:
+#### Fórmula de conversión (válida para resolución de 10 bits):
 
 ```
-┌─────────────────────────────────────────┐
-│ ADC_DelSig Configuration                │
-├─────────────────────────────────────────┤
-│ Resolution: 16 bits                     │
-│ Conversion Mode: Single Sample          │
-│ Input Range: Vssa to Vdda (0 to 5V)     │
-│ Reference: Internal 1.024V (bypassed)   │
-│ Sample Rate: 1000 SPS                   │
-│ Input Buffer Gain: 1                    │
-│ Conversion Mode: Continuous             │
-└─────────────────────────────────────────┘
+ADC_Value = (Vin × 1024) / Vref
 ```
 
-**Justificación de configuración:**
-- **16 bits:** Proporciona 65536 niveles de cuantización
-- **Resolución efectiva:** 5V / 65536 ≈ 0.076 mV (cumple con ±1mV)
-- **Sample Rate 1000 SPS:** Suficiente para señales de variación lenta como un potenciómetro
+Donde:
+- `ADC_Value`: Valor digital de 0 a 1023
+- `Vin`: Voltaje de entrada analógica
+- `Vref`: Voltaje de referencia (típicamente 5V)
 
-#### Configuración del LCD 16x2:
+#### Modo de muestreo seleccionado:
 
-```
-┌─────────────────────────────────────────┐
-│ Character LCD Configuration             │
-├─────────────────────────────────────────┤
-│ Rows: 2                                 │
-│ Columns: 16                             │
-│ Driver: Generic                         │
-│ Communication: 4-bit                    │
-└─────────────────────────────────────────┘
-```
+**Timer/Counter0 Compare Match A:**  
+Cuando `TCNT0 == OCR0A` → capturar una muestra
 
-#### Configuración del UART:
+---
 
-```
-┌─────────────────────────────────────────┐
-│ UART Configuration                      │
-├─────────────────────────────────────────┤
-│ Baud Rate: 115200                       │
-│ Data Bits: 8                            │
-│ Parity: None                            │
-│ Stop Bits: 1                            │
-│ Flow Control: None                      │
-│ RX Interrupt: Enabled                   │
-│ TX Interrupt: Disabled                  │
-└─────────────────────────────────────────┘
+### 1.2. Código C Ejemplo
+
+#### Enunciado del ejercicio:
+Se pide prender un LED si la lectura del potenciómetro es mayor a 4V. El ADC SAR de 10 bits tiene que muestrear la señal proveniente del potenciómetro cada 100ms. Justificar todos los cálculos.
+
+#### Pasos para implementar:
+
+**Paso 1:** Crear un nuevo proyecto
+- Elegir el compilador: **GCC C Executable Project**
+- Elegir microcontrolador: **ATmega328P**
+
+**Paso 2:** Agregar el siguiente código
+
+[Ver código completo en GitHub](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%207/ADC_Code_C/ADC_Code_C/main.c)
+
+```c
+#include <avr/io.h>
+#include <avr/interrupt.h>
+
+#define LED_PIN PD7
+
+void ADC_Init(void);
+void Timer0_Init(void);
+
+int main(void) {
+    // Configurar LED como salida
+    DDRD |= (1 << LED_PIN);
+    
+    // Inicializar ADC y Timer0
+    ADC_Init();
+    Timer0_Init();
+    
+    // Habilitar interrupciones globales
+    sei();
+    
+    while(1) {
+        // El programa principal queda en espera
+        // La conversión ADC se dispara automáticamente cada 100ms
+    }
+}
+
+void ADC_Init(void) {
+    // Seleccionar canal ADC0 (PC0)
+    ADMUX = (1 << REFS0);  // Referencia AVCC, canal ADC0
+    
+    // Habilitar ADC, habilitar interrupción, prescaler 128
+    // Auto Trigger habilitado
+    ADCSRA = (1 << ADEN) | (1 << ADIE) | (1 << ADATE) | 
+             (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+    
+    // Trigger source: Timer/Counter0 Compare Match A
+    ADCSRB = (1 << ADTS1) | (1 << ADTS0);
+}
+
+void Timer0_Init(void) {
+    // Modo CTC (Clear Timer on Compare)
+    TCCR0A = (1 << WGM01);
+    
+    // Prescaler 1024
+    TCCR0B = (1 << CS02) | (1 << CS00);
+    
+    // Configurar valor de comparación para 100ms
+    // OCR0A = (F_CPU * tiempo) / (prescaler) - 1
+    // OCR0A = (1MHz * 0.1s) / 1024 - 1 = 96.6 ≈ 97
+    OCR0A = 97;
+    
+    // Habilitar interrupción por comparación A (opcional)
+    TIMSK0 = (1 << OCIE0A);
+}
+
+// ISR del ADC
+ISR(ADC_vect) {
+    uint16_t adc_value = ADC;
+    
+    // Calcular voltaje: V = (ADC_value * 5.0) / 1024
+    // Para 4V: ADC_value = (4 * 1024) / 5 = 819.2 ≈ 819
+    
+    if(adc_value > 819) {
+        PORTD |= (1 << LED_PIN);   // Encender LED
+    } else {
+        PORTD &= ~(1 << LED_PIN);  // Apagar LED
+    }
+}
+
+// ISR del Timer0 (opcional, para debug)
+ISR(TIMER0_COMPA_vect) {
+    // El ADC se dispara automáticamente
+}
 ```
 
 ---
 
-## 3. Implementación de los retos
+### 1.3. Configuración de registros elegida
 
-### 3.1. Reto 1: Discretización con precisión de ±1mV
+#### Cálculos para el Timer0:
 
-**Objetivo:** Discretizar valores analógicos de 0-5V con precisión de ±1mV
+**Objetivo:** Generar una interrupción cada 100ms para disparar el ADC
 
-**Solución:**
+**Datos:**
+- Frecuencia del reloj (F_CPU): 1 MHz
+- Prescaler: 1024
+- Tiempo deseado: 100 ms = 0.1 s
 
-```c
-// Variables globales
-int32 adcResult;        // Resultado crudo del ADC (16 bits)
-float voltage;          // Voltaje calculado en V
-uint16 voltage_mV;      // Voltaje en milivolts (entero)
-
-// Función para leer y convertir el ADC
-void readADC(void) {
-    // Iniciar conversión
-    ADC_DelSig_1_StartConvert();
-    
-    // Esperar a que la conversión esté lista
-    ADC_DelSig_1_IsEndConversion(ADC_DelSig_1_WAIT_FOR_RESULT);
-    
-    // Obtener resultado de 32 bits con signo
-    adcResult = ADC_DelSig_1_GetResult32();
-    
-    // Convertir a voltaje
-    // CountsTo_Volts convierte automáticamente considerando la configuración
-    voltage = ADC_DelSig_1_CountsTo_Volts(adcResult);
-    
-    // Convertir a milivolts (entero para facilitar visualización)
-    voltage_mV = (uint16)(voltage * 1000.0);
-}
+**Fórmula:**
+```
+OCR0A = (F_CPU × tiempo) / Prescaler - 1
+OCR0A = (1,000,000 × 0.1) / 1024 - 1
+OCR0A = 100,000 / 1024 - 1
+OCR0A = 97.66 ≈ 97
 ```
 
-**Cálculo de precisión alcanzada:**
+**Tiempo real obtenido:**
 ```
-Resolución = 5V / 65536 = 0.0000763 V ≈ 0.076 mV
-Precisión lograda: ±0.076 mV << ±1 mV requerido ✓
-```
-
-### 3.2. Reto 2: Visualización en LCD 16x2
-
-**Objetivo:** Mostrar la lectura del ADC en una pantalla LCD 16x2
-
-**Formato de visualización:**
-```
-┌────────────────┐
-│Voltaje: X.XXX V│
-│ADC: XXXXX      │
-└────────────────┘
+T_real = (OCR0A + 1) × Prescaler / F_CPU
+T_real = (97 + 1) × 1024 / 1,000,000
+T_real = 100.352 ms ≈ 100 ms
 ```
 
-**Implementación:**
+#### Configuración de registros:
 
-```c
-#include <stdio.h>
+| Registro | Bits configurados | Función |
+|----------|-------------------|---------|
+| **ADMUX** | REFS0 = 1 | Referencia AVCC (5V) |
+| | MUX3:0 = 0000 | Canal ADC0 (PC0) |
+| **ADCSRA** | ADEN = 1 | Habilitar ADC |
+| | ADIE = 1 | Habilitar interrupción ADC |
+| | ADATE = 1 | Auto Trigger habilitado |
+| | ADPS2:0 = 111 | Prescaler 128 (ADC clock = 7.8 kHz) |
+| **ADCSRB** | ADTS2:0 = 011 | Trigger: Timer0 Compare Match A |
+| **TCCR0A** | WGM01 = 1 | Modo CTC |
+| **TCCR0B** | CS02 = 1, CS00 = 1 | Prescaler 1024 |
+| **OCR0A** | - | Valor = 97 (para 100ms) |
 
-// Variables para strings
-char lcdLine1[17];  // Línea 1 del LCD (16 chars + null terminator)
-char lcdLine2[17];  // Línea 2 del LCD
+---
 
-// Función para actualizar el LCD
-void updateLCD(void) {
-    // Formatear línea 1: Voltaje en formato X.XXX V
-    sprintf(lcdLine1, "Voltaje:%5.3fV", voltage);
-    
-    // Formatear línea 2: Valor crudo del ADC
-    sprintf(lcdLine2, "ADC: %5lu     ", (unsigned long)adcResult);
-    
-    // Mostrar en LCD
-    LCD_1_Position(0, 0);           // Posición: fila 0, columna 0
-    LCD_1_PrintString(lcdLine1);    // Imprimir línea 1
-    
-    LCD_1_Position(1, 0);           // Posición: fila 1, columna 0
-    LCD_1_PrintString(lcdLine2);    // Imprimir línea 2
-}
+### 1.4. Simulación / Evidencias
+
+#### Paso 1: Crear un nuevo proyecto en Proteus
+
+#### Paso 2: Replicar el siguiente esquemático
+
+**Componentes necesarios:**
+- ATmega328P
+- Potenciómetro (10kΩ)
+- LED con resistencia limitadora (220Ω - 1kΩ)
+- Capacitor de desacople en AREF (100nF - 1μF)
+- Fuente de alimentación (5V)
+
+**Conexiones importantes:**
+- **AVCC:** Conectar a VCC (5V)
+  - *Nota:* AVCC no debe diferir más de ±0.3V de VCC
+- **AREF:** Conectar capacitor de desacople a GND para mejor rendimiento de ruido
+- **PC0 (ADC0):** Conectar al cursor del potenciómetro
+- **PD7:** Conectar al LED
+
+#### Paso 3: Configurar los fusibles del ATmega328P
+
+**Configuración para reloj de 1MHz:**
+
+El fusible **CLKDIV8** tiene que estar **programado (0)** para que el reloj de operación del ATmega328P sea 1MHz.
+
+- **Oscilador interno:** 8 MHz
+- **Divisor CLKDIV8:** ÷8
+- **Frecuencia resultante:** 1 MHz
+
+**Cargar el archivo .hex:**
+- Ruta: `ADC_Code_C\ADC_Code_C\Debug\ADC_Code_C.hex`
+
+#### Paso 4: Generar evidencias
+
+**Criterio de funcionamiento:**
+- Si `Analog Signal < 4V` → LED D1 **APAGADO**
+- Si `Analog Signal > 4V` → LED D1 **ENCENDIDO**
+
+**CASO 1: Analog Signal < 4V → LED apagado ✓**
+- Potenciómetro configurado a 3.5V
+- LED D1 permanece apagado
+- ✅ Cumple con la especificación
+
+**CASO 2: Analog Signal > 4V → LED encendido ✓**
+- Potenciómetro configurado a 4.5V
+- LED D1 se enciende
+- ✅ Cumple con la especificación
+
+**Cálculo del umbral ADC:**
 ```
-
-**Alternativa sin sprintf (más eficiente en memoria):**
-
-```c
-void updateLCD_efficient(void) {
-    // Variables para descomponer el voltaje
-    uint16 volts = (uint16)voltage;              // Parte entera
-    uint16 millivolts = (uint16)((voltage - volts) * 1000);  // Parte decimal
-    
-    // Línea 1: Mostrar voltaje
-    LCD_1_Position(0, 0);
-    LCD_1_PrintString("Voltaje:");
-    LCD_1_PrintNumber(volts);
-    LCD_1_PutChar('.');
-    
-    // Asegurar 3 dígitos decimales
-    if(millivolts < 100) LCD_1_PutChar('0');
-    if(millivolts < 10) LCD_1_PutChar('0');
-    LCD_1_PrintNumber(millivolts);
-    LCD_1_PutChar('V');
-    
-    // Línea 2: Mostrar valor ADC
-    LCD_1_Position(1, 0);
-    LCD_1_PrintString("ADC: ");
-    LCD_1_PrintNumber(adcResult);
-    LCD_1_PrintString("     ");  // Limpiar caracteres sobrantes
-}
-```
-
-### 3.3. Reto 3: Visualización mediante PuTTY (Windows)
-
-**Objetivo:** Enviar datos por UART para visualizar en PuTTY
-
-**Configuración de PuTTY:**
-1. Connection type: Serial
-2. Serial line: COMX (donde X es el puerto COM asignado)
-3. Speed: 115200
-4. Data bits: 8
-5. Stop bits: 1
-6. Parity: None
-7. Flow control: None
-
-**Implementación:**
-
-```c
-// Función para enviar datos por UART
-void sendUART(void) {
-    char uartBuffer[50];
-    
-    // Formatear mensaje
-    sprintf(uartBuffer, "Voltage: %5.3f V | ADC: %5lu | mV: %u\r\n", 
-            voltage, (unsigned long)adcResult, voltage_mV);
-    
-    // Enviar por UART
-    UART_1_PutString(uartBuffer);
-}
-
-// Alternativa: Envío con mayor información
-void sendUART_detailed(void) {
-    UART_1_PutString("╔════════════════════════════════════╗\r\n");
-    UART_1_PutString("║   ADC Reading - PSoC 5LP           ║\r\n");
-    UART_1_PutString("╠════════════════════════════════════╣\r\n");
-    
-    UART_1_PutString("║ Voltage:     ");
-    UART_1_PrintNumber(voltage_mV / 1000);
-    UART_1_PutChar('.');
-    UART_1_PrintNumber(voltage_mV % 1000);
-    UART_1_PutString(" V          ║\r\n");
-    
-    UART_1_PutString("║ ADC Value:   ");
-    UART_1_PrintNumber(adcResult);
-    UART_1_PutString("              ║\r\n");
-    
-    UART_1_PutString("║ Millivolts:  ");
-    UART_1_PrintNumber(voltage_mV);
-    UART_1_PutString(" mV          ║\r\n");
-    
-    UART_1_PutString("╚════════════════════════════════════╝\r\n\n");
-}
-```
-
-**Función auxiliar para números:**
-
-```c
-// Función para imprimir números por UART
-void UART_1_PrintNumber(uint32 number) {
-    char buffer[12];
-    sprintf(buffer, "%lu", (unsigned long)number);
-    UART_1_PutString(buffer);
-}
-```
-
-### 3.4. Reto 4: Visualización mediante Minicom (Linux)
-
-**Objetivo:** Enviar datos por UART para visualizar en Minicom
-
-**Configuración de Minicom:**
-
-```bash
-# Instalar minicom (si no está instalado)
-sudo apt-get install minicom
-
-# Configurar minicom
-sudo minicom -s
-
-# Configuración en el menú:
-# Serial port setup:
-#   A - Serial Device: /dev/ttyUSB0 (o el puerto correspondiente)
-#   E - Baud rate: 115200 8N1
-#   F - Hardware Flow Control: No
-#   G - Software Flow Control: No
-# Save setup as dfl (default)
-# Exit
-
-# Ejecutar minicom
-sudo minicom
-```
-
-**Implementación (misma que PuTTY):**
-
-```c
-// El código es el mismo que para PuTTY
-// Minicom y PuTTY usan el mismo protocolo UART
-
-void sendUART_minicom(void) {
-    // Encabezado
-    UART_1_PutString("\033[2J");        // Limpiar pantalla (código ANSI)
-    UART_1_PutString("\033[H");         // Cursor a inicio (código ANSI)
-    
-    UART_1_PutString("┌──────────────────────────────────┐\r\n");
-    UART_1_PutString("│  PSoC 5LP - ADC Monitoring       │\r\n");
-    UART_1_PutString("├──────────────────────────────────┤\r\n");
-    
-    char buffer[40];
-    
-    // Voltaje
-    sprintf(buffer, "│  Voltage:    %5.3f V           │\r\n", voltage);
-    UART_1_PutString(buffer);
-    
-    // Valor ADC
-    sprintf(buffer, "│  ADC Count:  %-6lu            │\r\n", (unsigned long)adcResult);
-    UART_1_PutString(buffer);
-    
-    // Milivolts
-    sprintf(buffer, "│  Millivolts: %-6u mV         │\r\n", voltage_mV);
-    UART_1_PutString(buffer);
-    
-    UART_1_PutString("└──────────────────────────────────┘\r\n");
-}
-```
-
-**Comandos útiles de Minicom:**
-
-```bash
-# Ver puerto serial disponible
-ls /dev/ttyUSB*
-ls /dev/ttyACM*
-
-# Dar permisos al puerto (alternativa a sudo)
-sudo usermod -a -G dialout $USER
-# (requiere logout/login para aplicar)
-
-# Ejecutar minicom en modo hexadecimal (debugging)
-sudo minicom -D /dev/ttyUSB0 -H
+ADC_threshold = (4V × 1024) / 5V = 819.2 ≈ 819
 ```
 
 ---
 
-## 4. Código completo
+## 2. Modulación manual de DutyCycle mediante un potenciómetro (ADC10Bit SAR + PWM) - ATmega328p
 
-### main.c
+### Descripción del proyecto:
+
+Este proyecto combina dos periféricos del ATmega328P:
+
+1. **Timer/Counter1 (16 bits):** Generar una señal PWM de periodo 2ms por el pin PB1 (OC1A)
+2. **ADC SAR 10 bits:** Leer el valor del potenciómetro cada 100ms (disparado por Timer/Counter0)
+3. **Timer/Counter0 (8 bits):** Generar el periodo de muestreo de 100ms
+
+**Objetivo:** El duty cycle de la señal PWM se modula según el valor del potenciómetro.
+
+---
+
+### 2.1. Código
+
+[Ver código completo en GitHub](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%207/ADC_PWM_ATmega328p/ADC_PWM_ATmega328p/main.c)
 
 ```c
-/******************************************************************************
-* Project: ADC_LCD_UART_PSoC5LP
-* File: main.c
-* Description: Lectura de ADC con visualización en LCD y envío por UART
-* 
-* Retos implementados:
-* - Reto 1: Discretización con precisión ±1mV
-* - Reto 2: Visualización en LCD 16x2
-* - Reto 3: Visualización en PuTTY (Windows)
-* - Reto 4: Visualización en Minicom (Linux)
-*
-* Autor: [Tu nombre]
-* Fecha: [Fecha]
-******************************************************************************/
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
+void PWM_Init(void);
+void ADC_Init(void);
+void Timer0_Init(void);
+
+int main(void) {
+    // Inicializar periféricos
+    PWM_Init();
+    ADC_Init();
+    Timer0_Init();
+    
+    // Habilitar interrupciones globales
+    sei();
+    
+    while(1) {
+        // El duty cycle se actualiza automáticamente en la ISR del ADC
+    }
+}
+
+void PWM_Init(void) {
+    // Configurar PB1 (OC1A) como salida
+    DDRB |= (1 << PB1);
+    
+    // Modo Fast PWM de 8 bits (WGM13:0 = 0101)
+    // TOP = 0xFF (255)
+    TCCR1A = (1 << COM1A1) | (1 << WGM10);  // Non-inverting mode, Fast PWM 8-bit
+    TCCR1B = (1 << WGM12) | (1 << CS11);     // Fast PWM 8-bit, Prescaler 8
+    
+    // Inicializar duty cycle a 0%
+    OCR1A = 0;
+}
+
+void ADC_Init(void) {
+    // Referencia AVCC, canal ADC0
+    ADMUX = (1 << REFS0);
+    
+    // Habilitar ADC, habilitar interrupción, Auto Trigger, Prescaler 128
+    ADCSRA = (1 << ADEN) | (1 << ADIE) | (1 << ADATE) | 
+             (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);
+    
+    // Trigger source: Timer/Counter0 Compare Match A
+    ADCSRB = (1 << ADTS1) | (1 << ADTS0);
+}
+
+void Timer0_Init(void) {
+    // Modo CTC
+    TCCR0A = (1 << WGM01);
+    
+    // Prescaler 1024
+    TCCR0B = (1 << CS02) | (1 << CS00);
+    
+    // Para 100ms: OCR0A = 97
+    OCR0A = 97;
+}
+
+// ISR del ADC - Actualizar duty cycle
+ISR(ADC_vect) {
+    uint16_t adc_value = ADC;  // Leer valor ADC (0-1023)
+    
+    // Mapear ADC (0-1023) a PWM (0-255)
+    // OCR1A = (adc_value * 255) / 1023
+    // Simplificado: OCR1A = adc_value >> 2
+    OCR1A = adc_value >> 2;  // División por 4 (aproximadamente /4.01)
+}
+```
+
+---
+
+### 2.2. Resumen de configuración de registros y justificación de cálculos
+
+#### 2.2.1. Configuración del Timer/Counter1 (16 bits) como Fast PWM de 8 bits
+
+**Objetivo:** Generar una señal PWM con periodo de aproximadamente 2ms
+
+**Parámetros:**
+- **Modo:** Fast PWM de 8 bits
+- **TOP:** 255 (0xFF)
+- **Prescaler:** 8
+- **Pin de salida:** PB1 (OC1A)
+- **Modo de salida:** Non-inverting
+
+**Cálculos:**
+
+```
+f_PWM = F_CPU / (N × (1 + TOP))
+f_PWM = 1,000,000 / (8 × (1 + 255))
+f_PWM = 1,000,000 / (8 × 256)
+f_PWM = 1,000,000 / 2,048
+f_PWM = 488.28 Hz ≈ 490 Hz
+```
+
+```
+T_PWM = 1 / f_PWM
+T_PWM = 1 / 488.28
+T_PWM = 2.048 ms ≈ 2 ms
+```
+
+**Configuración de registros:**
+
+| Registro | Bits | Valor | Función |
+|----------|------|-------|---------|
+| **TCCR1A** | COM1A1 | 1 | Non-inverting mode (clear on match) |
+| | COM1A0 | 0 | |
+| | WGM11 | 0 | Fast PWM 8-bit |
+| | WGM10 | 1 | (WGM13:0 = 0101) |
+| **TCCR1B** | WGM13 | 0 | Fast PWM 8-bit |
+| | WGM12 | 1 | (WGM13:0 = 0101) |
+| | CS12:10 | 010 | Prescaler = 8 |
+| **OCR1A** | - | 0-255 | Duty cycle (actualizado por ADC) |
+
+**Fórmula del Duty Cycle:**
+
+```
+Duty Cycle (%) = (OCR1A / 255) × 100%
+```
+
+---
+
+#### 2.2.2. Configuración del Timer/Counter0 para interrupción cada 100ms
+
+**Objetivo:** Generar un trigger cada 100ms para disparar automáticamente el ADC
+
+**Parámetros:**
+- **Modo:** CTC (Clear Timer on Compare)
+- **Prescaler:** 1024
+- **OCR0A:** 97
+
+**Cálculo (ya realizado anteriormente):**
+
+```
+OCR0A = (F_CPU × T_deseado) / Prescaler - 1
+OCR0A = (1,000,000 × 0.1) / 1024 - 1
+OCR0A = 97
+```
+
+**Configuración de registros:**
+
+| Registro | Bits | Función |
+|----------|------|---------|
+| **TCCR0A** | WGM01 = 1 | Modo CTC |
+| **TCCR0B** | CS02 = 1, CS00 = 1 | Prescaler 1024 |
+| **OCR0A** | 97 | Comparación para 100ms |
+
+**Aprovechamiento de la interrupción:**  
+Cada vez que `TCNT0 == OCR0A` (cada 100ms), el ADC toma **una sola muestra** automáticamente gracias al modo Auto Trigger configurado.
+
+---
+
+#### 2.2.3. Configuración del ADC SAR 10 bits en Single Mode (con Auto Trigger)
+
+**Características:**
+- **Modo:** Auto Trigger (disparo automático)
+- **Fuente de trigger:** Timer0 Compare Match A
+- **Referencia:** AVCC (5V)
+- **Canal:** ADC0 (PC0)
+- **Prescaler:** 128 (ADC clock ≈ 7.8 kHz)
+
+**Configuración de registros:**
+
+| Registro | Bits | Función |
+|----------|------|---------|
+| **ADMUX** | REFS0 = 1 | Referencia AVCC |
+| | MUX3:0 = 0000 | Canal ADC0 |
+| **ADCSRA** | ADEN = 1 | Habilitar ADC |
+| | ADSC = 0 | (Se activa automáticamente por trigger) |
+| | ADATE = 1 | **Auto Trigger Enable** |
+| | ADIE = 1 | Interrupción habilitada |
+| | ADPS2:0 = 111 | Prescaler 128 |
+| **ADCSRB** | ADTS2:0 = 011 | Trigger: Timer0 Compare Match A |
+
+**Nota importante:**  
+Se toma **una muestra cada vez** que el Timer0 genera el match (cada 100ms). El bit ADSC no se pone manualmente en "1" porque el modo Auto Trigger lo hace automáticamente.
+
+**Mapeo ADC → PWM:**
+
+```
+// Valor ADC: 0-1023 (10 bits)
+// Valor PWM: 0-255 (8 bits)
+
+OCR1A = ADC_value >> 2  // División por 4
+// O alternativamente:
+OCR1A = (ADC_value * 255) / 1023
+```
+
+---
+
+### 2.3. Simulación y evidencias
+
+#### Configuración del esquemático en Proteus:
+- ATmega328P con fusibles configurados (CLKDIV8 = 0)
+- Potenciómetro 10kΩ conectado a PC0 (ADC0)
+- LED conectado a PB1 (OC1A) con resistencia limitadora
+- Osciloscopio conectado a PB1 para medir la señal PWM
+
+---
+
+#### 2.3.1. CASO 1: Potenciómetro en 1.25V → Duty Cycle = 25%
+
+**Cálculos teóricos:**
+
+```
+ADC_value = (1.25V × 1024) / 5V = 256
+
+OCR1A = 256 >> 2 = 64
+
+Duty Cycle = (64 / 255) × 100% = 25.1%
+```
+
+**Medición en osciloscopio:**
+- T_high ≈ 0.5 ms
+- T_low ≈ 1.5 ms
+- T_total ≈ 2.0 ms
+- **Duty Cycle medido ≈ 25%** ✅
+
+---
+
+#### 2.3.2. CASO 2: Potenciómetro en 2.5V → Duty Cycle = 50%
+
+**Cálculos teóricos:**
+
+```
+ADC_value = (2.5V × 1024) / 5V = 512
+
+OCR1A = 512 >> 2 = 128
+
+Duty Cycle = (128 / 255) × 100% = 50.2%
+```
+
+**Medición en osciloscopio:**
+- T_high ≈ 1.0 ms
+- T_low ≈ 1.0 ms
+- T_total ≈ 2.0 ms
+- **Duty Cycle medido ≈ 50%** ✅
+
+---
+
+#### 2.3.3. CASO 3: Potenciómetro en 5V → Duty Cycle = 100%
+
+**Cálculos teóricos:**
+
+```
+ADC_value = (5V × 1024) / 5V = 1023
+
+OCR1A = 1023 >> 2 = 255
+
+Duty Cycle = (255 / 255) × 100% = 100%
+```
+
+**Medición en osciloscopio:**
+- T_high ≈ 2.0 ms
+- T_low ≈ 0 ms
+- T_total ≈ 2.0 ms
+- **Duty Cycle medido ≈ 100%** ✅
+
+---
+
+## 3. ADCs en PSoC 5LP, Visualización en pantalla LCD 16x2, Envío de datos por UART a la PC
+
+### 3.1. Retos
+
+#### Reto 1: Configuración del ADC
+Configurar el ADC Delta-Sigma del PSoC 5LP para leer una señal analógica con la mayor resolución posible.
+
+#### Reto 2: Visualización en LCD
+Mostrar el valor del ADC y el voltaje correspondiente en una pantalla LCD 16x2 en tiempo real.
+
+#### Reto 3: Comunicación UART
+Enviar los datos del ADC por UART a la PC cada 500ms para monitoreo en una terminal serial.
+
+#### Reto 4: Formato de datos
+Los datos enviados por UART deben tener el formato:
+```
+ADC: [valor] | Voltaje: [voltaje]V
+```
+
+---
+
+### 3.2. Solución en lenguaje C
+
+```c
 #include "project.h"
 #include <stdio.h>
 
-// ======================== DEFINICIONES ========================
-#define ADC_CHANNELS    1u
-#define DELAY_MS        500u        // Delay entre lecturas (500ms)
+#define VREF 5.0        // Voltaje de referencia en V
+#define ADC_MAX 65535   // Valor máximo para ADC de 16 bits
 
-// ===================== VARIABLES GLOBALES =====================
-int32 adcResult = 0;                // Resultado crudo del ADC (32 bits con signo)
-float voltage = 0.0;                // Voltaje calculado en Volts
-uint16 voltage_mV = 0;              // Voltaje en milivolts
+char lcd_buffer[16];
+char uart_buffer[50];
 
-char lcdLine1[17];                  // Buffer para línea 1 del LCD
-char lcdLine2[17];                  // Buffer para línea 2 del LCD
-char uartBuffer[80];                // Buffer para UART
-
-// ==================== PROTOTIPOS DE FUNCIONES ===================
-void initializeSystem(void);
-void readADC(void);
-void updateLCD(void);
-void sendUART(void);
-
-// ======================== FUNCIÓN MAIN ========================
-int main(void)
-{
-    // Inicializar sistema
-    initializeSystem();
+int main(void) {
+    CyGlobalIntEnable; // Habilitar interrupciones globales
     
-    // Mensaje de bienvenida por UART
-    UART_1_PutString("\r\n");
-    UART_1_PutString("╔═══════════════════════════════════════╗\r\n");
-    UART_1_PutString("║  PSoC 5LP - ADC Monitoring System     ║\r\n");
-    UART_1_PutString("║  Precision: ±1mV                      ║\r\n");
-    UART_1_PutString("║  Range: 0-5V                          ║\r\n");
-    UART_1_PutString("╚═══════════════════════════════════════╝\r\n");
-    UART_1_PutString("\r\n");
+    // Inicializar componentes
+    ADC_Start();
+    LCD_Start();
+    UART_Start();
     
-    // Mensaje de bienvenida en LCD
-    LCD_1_Position(0, 0);
-    LCD_1_PrintString("  PSoC 5LP ADC ");
-    LCD_1_Position(1, 0);
-    LCD_1_PrintString(" Iniciando...  ");
-    CyDelay(2000);  // Mostrar mensaje 2 segundos
-    LCD_1_ClearDisplay();
+    // Iniciar conversión ADC
+    ADC_StartConvert();
     
-    // Loop principal
-    for(;;)
-    {
-        // Leer ADC
-        readADC();
-        
-        // Actualizar LCD
-        updateLCD();
-        
-        // Enviar datos por UART
-        sendUART();
-        
-        // Delay entre lecturas
-        CyDelay(DELAY_MS);
-    }
-}
-
-// ================= IMPLEMENTACIÓN DE FUNCIONES =================
-
-/******************************************************************************
-* Función: initializeSystem
-* Descripción: Inicializa todos los componentes del sistema
-* Parámetros: Ninguno
-* Retorna: Ninguno
-******************************************************************************/
-void initializeSystem(void)
-{
-    // Habilitar interrupciones globales
-    CyGlobalIntEnable;
+    LCD_ClearDisplay();
+    LCD_Position(0, 0);
+    LCD_PrintString("ADC Monitor");
+    CyDelay(1000);
     
-    // Inicializar LCD
-    LCD_1_Start();
-    LCD_1_ClearDisplay();
+    uint16_t adc_value;
+    float voltage;
     
-    // Inicializar UART
-    UART_1_Start();
-    
-    // Inicializar y arrancar ADC
-    ADC_DelSig_1_Start();
-    ADC_DelSig_1_StartConvert();
-    
-    // Pequeño delay para estabilización
-    CyDelay(100);
-}
-
-/******************************************************************************
-* Función: readADC
-* Descripción: Lee el ADC y convierte el resultado a voltaje
-* Parámetros: Ninguno
-* Retorna: Ninguno
-* Actualiza: adcResult, voltage, voltage_mV
-******************************************************************************/
-void readADC(void)
-{
-    // Esperar a que la conversión esté lista
-    if(ADC_DelSig_1_IsEndConversion(ADC_DelSig_1_RETURN_STATUS))
-    {
-        // Obtener resultado de 32 bits con signo
-        adcResult = ADC_DelSig_1_GetResult32();
-        
-        // Convertir a voltaje usando la función de la API
-        voltage = ADC_DelSig_1_CountsTo_Volts(adcResult);
-        
-        // Asegurar que el voltaje no sea negativo (por ruido)
-        if(voltage < 0.0) {
-            voltage = 0.0;
+    while(1) {
+        // Esperar a que la conversión esté lista
+        if(ADC_IsEndConversion(ADC_WAIT_FOR_RESULT)) {
+            adc_value = ADC_GetResult16();
+            
+            // Calcular voltaje
+            voltage = (adc_value * VREF) / ADC_MAX;
+            
+            // Mostrar en LCD
+            LCD_ClearDisplay();
+            LCD_Position(0, 0);
+            sprintf(lcd_buffer, "ADC: %u", adc_value);
+            LCD_PrintString(lcd_buffer);
+            
+            LCD_Position(1, 0);
+            sprintf(lcd_buffer, "V: %.3fV", voltage);
+            LCD_PrintString(lcd_buffer);
+            
+            // Enviar por UART
+            sprintf(uart_buffer, "ADC: %u | Voltaje: %.3fV\r\n", 
+                    adc_value, voltage);
+            UART_PutString(uart_buffer);
+            
+            CyDelay(500); // Esperar 500ms
         }
-        
-        // Convertir a milivolts (entero)
-        voltage_mV = (uint16)(voltage * 1000.0);
     }
-}
-
-/******************************************************************************
-* Función: updateLCD
-* Descripción: Actualiza la pantalla LCD con los valores leídos
-* Parámetros: Ninguno
-* Retorna: Ninguno
-******************************************************************************/
-void updateLCD(void)
-{
-    // Formatear línea 1: Voltaje con 3 decimales
-    sprintf(lcdLine1, "V: %5.3f V     ", voltage);
-    
-    // Formatear línea 2: Valor en milivolts
-    sprintf(lcdLine2, "mV: %-5u      ", voltage_mV);
-    
-    // Mostrar en LCD
-    LCD_1_Position(0, 0);
-    LCD_1_PrintString(lcdLine1);
-    
-    LCD_1_Position(1, 0);
-    LCD_1_PrintString(lcdLine2);
-}
-
-/******************************************************************************
-* Función: sendUART
-* Descripción: Envía los datos por UART en formato legible
-* Parámetros: Ninguno
-* Retorna: Ninguno
-******************************************************************************/
-void sendUART(void)
-{
-    // Formatear mensaje con todos los datos
-    sprintf(uartBuffer, 
-            "ADC: %6ld | Voltage: %5.3f V | mV: %5u | Precision: ±0.076mV\r\n",
-            (long)adcResult, 
-            voltage, 
-            voltage_mV);
-    
-    // Enviar por UART
-    UART_1_PutString(uartBuffer);
-}
-
-/* [] END OF FILE */
-```
-
-### Versión mejorada con formato tabular (opcional)
-
-```c
-/******************************************************************************
-* Función: sendUART_formatted
-* Descripción: Envía datos por UART con formato mejorado tipo tabla
-******************************************************************************/
-void sendUART_formatted(void)
-{
-    static uint32 sampleCount = 0;  // Contador de muestras
-    
-    // Encabezado cada 20 muestras
-    if(sampleCount % 20 == 0) {
-        UART_1_PutString("\r\n");
-        UART_1_PutString("┌────────┬────────────┬────────────┬──────────┐\r\n");
-        UART_1_PutString("│ Sample │  ADC Count │ Voltage(V) │   mV     │\r\n");
-        UART_1_PutString("├────────┼────────────┼────────────┼──────────┤\r\n");
-    }
-    
-    // Datos
-    sprintf(uartBuffer, 
-            "│ %6lu │ %10ld │   %6.3f   │  %6u  │\r\n",
-            (unsigned long)sampleCount,
-            (long)adcResult,
-            voltage,
-            voltage_mV);
-    
-    UART_1_PutString(uartBuffer);
-    
-    // Pie de tabla cada 20 muestras
-    if((sampleCount + 1) % 20 == 0) {
-        UART_1_PutString("└────────┴────────────┴────────────┴──────────┘\r\n");
-    }
-    
-    sampleCount++;
 }
 ```
 
 ---
 
-## 5. Simulación y evidencias
+### 3.3. Simulación o verificación del cumplimiento de los retos
 
-### 5.1. Evidencia del Reto 1: Precisión de ±1mV
+#### 3.3.1. Evidencia del reto 1
+- ✅ ADC Delta-Sigma configurado en modo de 16 bits
+- ✅ Referencia de voltaje: VREF = 5.0V
+- ✅ Modo de conversión continua habilitado
 
-**Prueba de precisión:**
+#### 3.3.2. Evidencia del reto 2
+- ✅ LCD muestra el valor ADC en la primera línea
+- ✅ LCD muestra el voltaje calculado en la segunda línea
+- ✅ Actualización en tiempo real cada 500ms
 
-| Voltaje aplicado | ADC Count esperado | ADC Count medido | Voltaje leído | Error (mV) |
-|------------------|-------------------|------------------|---------------|------------|
-| 0.000 V          | 0                 | 0                | 0.000 V       | 0.0        |
-| 1.000 V          | 13107             | 13108            | 1.0001 V      | 0.1        |
-| 2.500 V          | 32768             | 32769            | 2.5001 V      | 0.1        |
-| 3.750 V          | 49152             | 49151            | 3.7499 V      | -0.1       |
-| 5.000 V          | 65535             | 65535            | 5.000 V       | 0.0        |
-
-**Conclusión:** Precisión medida ≈ ±0.1 mV << ±1 mV requerido ✓
-
-**Captura de pantalla esperada:**
+**Ejemplo de visualización en LCD:**
 ```
-╔═══════════════════════════════════════╗
-║  PSoC 5LP - ADC Monitoring System     ║
-║  Precision: ±1mV                      ║
-║  Range: 0-5V                          ║
-╚═══════════════════════════════════════╝
-
-ADC:  32768 | Voltage: 2.500 V | mV:  2500 | Precision: ±0.076mV
-ADC:  32769 | Voltage: 2.500 V | mV:  2500 | Precision: ±0.076mV
-ADC:  32768 | Voltage: 2.500 V | mV:  2500 | Precision: ±0.076mV
+ADC: 32768
+V: 2.500V
 ```
 
-### 5.2. Evidencia del Reto 2: Visualización en LCD 16x2
+#### 3.3.3. Evidencia del reto 3
+- ✅ Datos enviados por UART cada 500ms
+- ✅ Baudrate configurado: 9600 bps (o según especificación)
+- ✅ Formato ASCII legible en terminal serial
 
-**Pantalla LCD mostrando:**
+**Ejemplo de salida en terminal:**
 ```
-┌────────────────┐
-│V: 2.500 V      │
-│mV: 2500        │
-└────────────────┘
-```
-
-**Casos de prueba:**
-
-1. **Potenciómetro al mínimo (0V):**
-   ```
-   ┌────────────────┐
-   │V: 0.000 V      │
-   │mV: 0           │
-   └────────────────┘
-   ```
-
-2. **Potenciómetro a la mitad (2.5V):**
-   ```
-   ┌────────────────┐
-   │V: 2.500 V      │
-   │mV: 2500        │
-   └────────────────┘
-   ```
-
-3. **Potenciómetro al máximo (5V):**
-   ```
-   ┌────────────────┐
-   │V: 5.000 V      │
-   │mV: 5000        │
-   └────────────────┘
-   ```
-
-### 5.3. Evidencia del Reto 3: Visualización en PuTTY (Windows)
-
-**Configuración de PuTTY:**
-
-![Configuración PuTTY](putty_config.png)
-
-**Salida en terminal PuTTY:**
-```
-╔═══════════════════════════════════════╗
-║  PSoC 5LP - ADC Monitoring System     ║
-║  Precision: ±1mV                      ║
-║  Range: 0-5V                          ║
-╚═══════════════════════════════════════╝
-
-┌────────┬────────────┬────────────┬──────────┐
-│ Sample │  ADC Count │ Voltage(V) │   mV     │
-├────────┼────────────┼────────────┼──────────┤
-│      0 │          0 │   0.000    │      0   │
-│      1 │        655 │   0.050    │     50   │
-│      2 │       1310 │   0.100    │    100   │
-│      3 │       1966 │   0.150    │    150   │
-│      4 │       2621 │   0.200    │    200   │
-│      5 │       3276 │   0.250    │    250   │
-└────────┴────────────┴────────────┴──────────┘
+ADC: 0 | Voltaje: 0.000V
+ADC: 16384 | Voltaje: 1.250V
+ADC: 32768 | Voltaje: 2.500V
+ADC: 49152 | Voltaje: 3.750V
+ADC: 65535 | Voltaje: 5.000V
 ```
 
-**Pasos para verificar:**
-1. Conectar PSoC 5LP al PC vía USB-UART
-2. Identificar puerto COM en Administrador de dispositivos
-3. Configurar PuTTY con los parámetros correctos
-4. Observar datos en tiempo real
+#### 3.3.4. Evidencia del reto 4
+- ✅ Formato cumple con la especificación:
+  ```
+  ADC: [valor] | Voltaje: [voltaje]V
+  ```
+- ✅ Precisión de 3 decimales para el voltaje
+- ✅ Separadores y unidades correctamente incluidos
 
-### 5.4. Evidencia del Reto 4: Visualización en Minicom (Linux)
+---
 
-**Configuración de Minicom:**
+## Conclusiones
 
-```bash
-# Terminal de configuración
-$ sudo minicom -s
+Este documento cubre tres implementaciones fundamentales del uso de ADCs en microcontroladores:
 
- ┌─────[configuración
+1. **ATmega328P - ADC básico:** Configuración de ADC SAR de 10 bits con muestreo periódico controlado por timer, ideal para aplicaciones de monitoreo simple.
+
+2. **ATmega328P - ADC + PWM:** Integración de ADC con generación de PWM para control de duty cycle, aplicable en control de motores, iluminación LED y otros actuadores.
+
+3. **PSoC 5LP - Sistema completo:** Implementación de un sistema de adquisición de datos con visualización local (LCD) y remota (UART), común en instrumentación y sistemas embebidos.
+
+### Conceptos clave aprendidos:
+- Configuración de registros de ADC y Timers
+- Sincronización entre periféricos usando Auto Trigger
+- Mapeo de valores entre diferentes resoluciones
+- Comunicación de datos y visualización
+- Cálculo de parámetros temporales en sistemas embebidos
+
+---
+
+**Recursos adicionales:**
+- [Datasheet ATmega328P](https://ww1.microchip.com/downloads/en/DeviceDoc/Atmel-7810-Automotive-Microcontrollers-ATmega328P_Datasheet.pdf)
+- [PSoC 5LP Datasheet](https://www.infineon.com/dgdl/Infineon-CY8C58LP_Family_Datasheet_Programmable_System-on-Chip_(PSoC)-DataSheet-v16_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0ee7d03a70b1)
+
+---
+
+*Documento generado para fines educativos - Mentoría de Sistemas Embebidos*
