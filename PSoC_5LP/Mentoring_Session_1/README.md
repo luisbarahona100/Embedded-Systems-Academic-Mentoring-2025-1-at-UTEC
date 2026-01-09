@@ -4,8 +4,8 @@
 [![Python](https://img.shields.io/badge/Python-3.x-green.svg)](https://www.python.org/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-> **Autor:** Luis David Barahona Valdivieso  
-> **Fecha:** 08.07.2025
+**Autor:** Luis David Barahona Valdivieso  
+**Fecha:** 08.07.2025
 
 > **Documento Completo + Imágenes:** https://docs.google.com/document/d/140sGo1cNi-e_6_IxycE8Ba23KTE9SigqHvjHngmGAv4/edit?usp=drive_link
 
