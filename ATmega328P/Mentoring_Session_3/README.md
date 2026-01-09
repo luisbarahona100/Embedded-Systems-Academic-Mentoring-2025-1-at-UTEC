@@ -2,6 +2,7 @@
 
 **Autor:** Luis David Barahona Valdivieso  
 **Fecha:** 25/04/2025
+**Documento completo:** https://docs.google.com/document/d/18cgkY4wSoPLySaBAxrfjMSsAaY74z8yJUY5V--6cOT8/edit?tab=t.0
 
 ---
 
