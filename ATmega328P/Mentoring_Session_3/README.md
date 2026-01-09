@@ -123,13 +123,17 @@ Llamar subrutina de retardo (1s)
 Volver al loop principal
 ```
 
-### 2.4. Código en Ensamblador
+### 2.4. Código Retardo en Ensamblador
 
-[RetardoAVREnsamblador/main.asm](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/Retardos/RetardoAVREnsamblador/RetardoAVREnsamblador/main.asm)
+[RetardoAVREnsamblador/main.asm](https://github.com/luisbarahona100/Embedded-Systems-Academic-Mentoring-2025-1-at-UTEC/blob/main/ATmega328P/Mentoring_Session_3/main_Retardo_AVR_Ensamblador.asm)
 
-### 2.5. Código en C
+**Script Python para calcular el valor de los Registros:**  
+[delay2AVR.py](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/Retardos/delay2AVR.py)
 
-[RetardoAVR_CodeC/main.c](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/Retardos/RetardoAVR_CodeC/RetardoAVR_CodeC/main.c)
+
+### 2.5. Código Retardo en C
+
+[RetardoAVR_CodeC/main.c](https://github.com/luisbarahona100/Embedded-Systems-Academic-Mentoring-2025-1-at-UTEC/blob/main/ATmega328P/Mentoring_Session_3/main_retardo_AVR_C_Code.c)
 
 ### 2.6. Simulación de los casos en Microchip y Proteus
 
@@ -142,17 +146,6 @@ Volver al loop principal
 ### 2.7. Implementación
 
 *(Incluir imágenes o descripción de la implementación física si está disponible)*
-
-### 2.8. Documentación en GITHUB
-
-**Code AVR Ensamblador:**  
-[RetardoAVREnsamblador/main.asm](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/Retardos/RetardoAVREnsamblador/RetardoAVREnsamblador/main.asm)
-
-**Code AVR C:**  
-[RetardoAVR_CodeC/main.c](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/Retardos/RetardoAVR_CodeC/RetardoAVR_CodeC/main.c)
-
-**Script Python para calcular el valor de los R:**  
-[delay2AVR.py](https://github.com/luisbarahona100/Mentorias/blob/main/Mentor%C3%ADa%204/Retardos/delay2AVR.py)
 
 ---
 
